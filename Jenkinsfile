@@ -92,6 +92,27 @@ pipeline {
             }
         }
 
+        stage('smoke test') {
+            environment {
+                CI_ENVIRONMENT_URL = 'https://soft-pegasus-585f6d.netlify.app/'
+            }
+            agent {
+                docker {
+                    image 'mcr.microsoft.com/playwright:v1.51.0-noble'
+                    reuseNode true
+                }
+            }
+            steps {
+                sh '''
+                    npx playwright test --reporter=html
+                '''
+            }
+            post {
+                always {
+                    publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright smoke test Report', reportTitles: '', useWrapperFileDirectly: true])
+                }
+            }
+        }
 
     }
 }
