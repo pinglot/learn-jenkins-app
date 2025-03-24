@@ -75,36 +75,6 @@ pipeline {
         }
 
         stage('Deploy staging') {
-            agent {
-                docker {
-                    image 'node:18-alpine'
-                    reuseNode true
-                }
-            }
-            steps {
-                sh '''
-                    npm --version
-                    npm install netlify-cli node-jq
-                    echo "Deploying to staging"
-                    node_modules/.bin/netlify --version
-                    node_modules/.bin/netlify status
-                    node_modules/.bin/netlify deploy --dir=build --json > deploy-output.json
-                    node_modules/.bin/node-jq -r '.deploy_url' deploy-output.json
-                '''
-                script {
-                    def deployUrl = sh(
-                        script: 'node_modules/.bin/node-jq -r .deploy_url deploy-output.json', // -r for raw output
-                        returnStdout: true
-                    ).trim()
-        
-                    env.CI_ENVIRONMENT_URL = deployUrl
-        
-                    sh "echo 'CI environment URL: $CI_ENVIRONMENT_URL'"
-                }
-            }
-        }
-
-        stage('Deploy staging') {
 
             agent {
                 docker {
