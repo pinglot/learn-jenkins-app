@@ -91,6 +91,38 @@ pipeline {
                     node_modules/.bin/netlify deploy --dir=build --json > deploy-output.json
                     node_modules/.bin/node-jq -r '.deploy_url' deploy-output.json
                 '''
+                script {
+                    def deployUrl = sh(
+                        script: 'node_modules/.bin/node-jq -r .deploy_url deploy-output.json', // -r for raw output
+                        returnStdout: true
+                    ).trim()
+        
+                    env.CI_ENVIRONMENT_URL = deployUrl
+        
+                    sh "echo 'CI environment URL: $CI_ENVIRONMENT_URL'"
+                }
+            }
+        }
+
+        stage('smoke test staging') {
+
+            agent {
+                docker {
+                    image 'mcr.microsoft.com/playwright:v1.51.0-noble'
+                    reuseNode true
+                }
+            }
+
+            steps {
+                sh '''
+                    sh "echo 'CI environment URL: $CI_ENVIRONMENT_URL'"
+                    npx playwright test --reporter=html
+                '''
+            }
+            post {
+                always {
+                    publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright smoke test Report', reportTitles: '', useWrapperFileDirectly: true])
+                }
             }
         }
 
@@ -128,6 +160,7 @@ pipeline {
 
             steps {
                 sh '''
+                    sh "echo 'CI environment URL: $CI_ENVIRONMENT_URL'"
                     npx playwright test --reporter=html
                 '''
             }
