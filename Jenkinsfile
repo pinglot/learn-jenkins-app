@@ -74,7 +74,7 @@ pipeline {
             }
         }
 
-        stage('Deploy') {
+        stage('Deploy staging') {
             agent {
                 docker {
                     image 'node:18-alpine'
@@ -85,6 +85,26 @@ pipeline {
                 sh '''
                     npm --version
                     npm install netlify-cli
+                    echo "Deploying to staging"
+                    node_modules/.bin/netlify --version
+                    node_modules/.bin/netlify status
+                    node_modules/.bin/netlify deploy --dir=build
+                '''
+            }
+        }
+
+        stage('Deploy prod') {
+            agent {
+                docker {
+                    image 'node:18-alpine'
+                    reuseNode true
+                }
+            }
+            steps {
+                sh '''
+                    npm --version
+                    npm install netlify-cli
+                    echo "Deploying to prod"
                     node_modules/.bin/netlify --version
                     node_modules/.bin/netlify status
                     node_modules/.bin/netlify deploy --dir=build --prod
@@ -93,15 +113,18 @@ pipeline {
         }
 
         stage('smoke test') {
-            environment {
-                CI_ENVIRONMENT_URL = 'https://soft-pegasus-585f6d.netlify.app/'
-            }
+
             agent {
                 docker {
                     image 'mcr.microsoft.com/playwright:v1.51.0-noble'
                     reuseNode true
                 }
             }
+
+            environment {
+                CI_ENVIRONMENT_URL = 'https://soft-pegasus-585f6d.netlify.app/'
+            }
+
             steps {
                 sh '''
                     npx playwright test --reporter=html
