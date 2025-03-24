@@ -115,13 +115,13 @@ pipeline {
 
             steps {
                 sh '''
-                    sh "echo 'CI environment URL: $CI_ENVIRONMENT_URL'"
+                    sh "echo CI environment URL: $CI_ENVIRONMENT_URL"
                     npx playwright test --reporter=html
                 '''
             }
             post {
                 always {
-                    publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright smoke test Report', reportTitles: '', useWrapperFileDirectly: true])
+                    publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright staging smoke test Report', reportTitles: '', useWrapperFileDirectly: true])
                 }
             }
         }
@@ -166,7 +166,7 @@ pipeline {
             }
             post {
                 always {
-                    publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright smoke test Report', reportTitles: '', useWrapperFileDirectly: true])
+                    publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright PROD smoke test Report', reportTitles: '', useWrapperFileDirectly: true])
                 }
             }
         }
