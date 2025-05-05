@@ -8,6 +8,10 @@ pipeline {
     }
 
     stages {
+        stage('Docker') {
+            sh 'docker build -t my-playwright .'
+        }
+
         stage('Build') {
             agent {
                 docker {
@@ -79,7 +83,7 @@ pipeline {
 
             agent {
                 docker {
-                    image 'mcr.microsoft.com/playwright:v1.51.0-noble'
+                    image 'my-playwright'
                     reuseNode true
                 }
             }
@@ -87,16 +91,15 @@ pipeline {
             steps {
                 sh '''
                     npm --version
-                    npm install netlify-cli node-jq
                     echo "Deploying to staging"
-                    node_modules/.bin/netlify --version
-                    node_modules/.bin/netlify status
-                    node_modules/.bin/netlify deploy --dir=build --json > deploy-output.json
-                    node_modules/.bin/node-jq -r '.deploy_url' deploy-output.json
+                    netlify --version
+                    netlify status
+                    netlify deploy --dir=build --json > deploy-output.json
+                    node-jq -r '.deploy_url' deploy-output.json
                 '''
                 script {
                     def deployUrl = sh(
-                        script: 'node_modules/.bin/node-jq -r .deploy_url deploy-output.json', // -r for raw output
+                        script: 'node-jq -r .deploy_url deploy-output.json', // -r for raw output
                         returnStdout: true
                     ).trim()
         
@@ -118,7 +121,7 @@ pipeline {
 
             agent {
                 docker {
-                    image 'mcr.microsoft.com/playwright:v1.51.0-noble'
+                    image 'my-playwright'
                     reuseNode true
                 }
             }
@@ -132,9 +135,9 @@ pipeline {
                     npm --version
                     npm install netlify-cli
                     echo "Deploying to prod"
-                    node_modules/.bin/netlify --version
-                    node_modules/.bin/netlify status
-                    node_modules/.bin/netlify deploy --dir=build --prod 
+                    netlify --version
+                    netlify status
+                    netlify deploy --dir=build --prod 
                     echo CI environment URL: $CI_ENVIRONMENT_URL
                     npx playwright test --reporter=html
                 '''
