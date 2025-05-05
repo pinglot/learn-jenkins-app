@@ -26,10 +26,8 @@ pipeline {
                     sh '''
                         aws --version
                         aws s3 ls
-                        # aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
-                        # aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
-                        # aws configure set default.region us-east-1
-                        # aws s3 cp s3://my-bucket-name/ . --recursive
+                        echo "Hello S3" > index.html
+                        aws s3 cp index.html s3://pawel-learning/index.html
                     '''
                 }                                
             }
